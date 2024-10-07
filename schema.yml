@@ -1,0 +1,1826 @@
+openapi: 3.0.3
+info:
+  title: Barber Shop API
+  version: 1.0.0
+  description: API for booking barber appointments.
+paths:
+  /app/get_shops_nearby/:
+    get:
+      operationId: app_get_shops_nearby_retrieve
+      description:
+        Retrieves a list of shops within a 5 km radius from the specified
+        latitude and longitude.
+      summary: Get Nearby Shops
+      parameters:
+        - in: query
+          name: latitude
+          schema:
+            type: number
+            format: double
+          description: Latitude of the user's location
+          required: true
+        - in: query
+          name: longitude
+          schema:
+            type: number
+            format: double
+          description: Longitude of the user's location
+          required: true
+      tags:
+        - app
+      security:
+        - {}
+      responses:
+        "200":
+          description: List of nearby shops within a 5 km radius
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nearby_shops:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        shop_id:
+                          type: integer
+                        shop_name:
+                          type: string
+                        about_us:
+                          type: string
+                        email:
+                          type: string
+                        phone_number:
+                          type: string
+                        address:
+                          type: string
+                        latitude:
+                          type: string
+                        longitude:
+                          type: string
+                        distance_km:
+                          type: number
+              example:
+                nearby_shops:
+                  - shop_id: 1
+                    shop_name: Barber Shop A
+                    about_us: We offer the best haircuts in town!
+                    email: contact@barbershopa.com
+                    phone_number: "+1234567890"
+                    address: 123 Main St, Anytown
+                    latitude: "40.7128"
+                    longitude: "-74.0060"
+                    distance_km: 4.5
+                  - shop_id: 2
+                    shop_name: Barber Shop B
+                    about_us: Specializing in modern styles and classic cuts.
+                    email: info@barbershopb.com
+                    phone_number: "+0987654321"
+                    address: 456 Elm St, Anytown
+                    latitude: "40.7128"
+                    longitude: "-74.0010"
+                    distance_km: 3.2
+        "400":
+          description: Bad request due to missing or invalid latitude/longitude
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Latitude and longitude are required.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: An unexpected error occurred.
+  /app/shop/{shop_id}/reviews:
+    get:
+      operationId: app_shop_reviews_retrieve
+      description: Retrieve paginated reviews for a given shop profile by shop ID.
+      summary: List reviews for a shop
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Page number for pagination
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+          description: Number of reviews per page
+        - in: path
+          name: shop_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      tags:
+        - app
+      responses:
+        "200":
+          description: Successful retrieval of paginated reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  total_pages:
+                    type: integer
+                  current_page:
+                    type: integer
+                  per_page:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        review_id:
+                          type: integer
+                        review_body:
+                          type: string
+                        review_rating:
+                          type: integer
+              example:
+                count: 25
+                total_pages: 3
+                current_page: 1
+                per_page: 10
+                results:
+                  - review_id: 1
+                    review_body: Great service!
+                    review_rating: 5
+        "404":
+          description: Shop profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Shop profile not found.
+        "500":
+          description: Unexpected error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: An unexpected error occurred. Please try again later.
+  /app/shop/{shop_id}/services:
+    get:
+      operationId: app_shop_services_retrieve
+      description:
+        Retrieve paginated services for a given shop profile by shop ID,
+        including service images.
+      summary: List services for a shop
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Page number for pagination
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+          description: Number of services per page
+        - in: path
+          name: shop_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      tags:
+        - app
+      responses:
+        "200":
+          description: Successful retrieval of paginated services
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  total_pages:
+                    type: integer
+                  current_page:
+                    type: integer
+                  per_page:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        service_id:
+                          type: integer
+                        service_name:
+                          type: string
+                        description:
+                          type: string
+                        price:
+                          type: string
+                        duration_in_secs:
+                          type: integer
+                        images:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              image_url:
+                                type: string
+                              description:
+                                type: string
+              example:
+                count: 12
+                total_pages: 2
+                current_page: 1
+                per_page: 10
+                results:
+                  - service_id: 1
+                    service_name: Haircut
+                    description: Standard haircut
+                    price: "20.00"
+                    duration_in_secs: 1800
+                    images:
+                      - image_url: http://example.com/image1.jpg
+                        description: Front view
+        "404":
+          description: Shop profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: ShopProfile not found.
+  /app/get-shop-details/{shop_id}/:
+    get:
+      tags:
+        - app
+      summary: Get Shop Details
+      description: This API retrieves the details of a shop profile including the `about_us`, `phone_number`, and `venue_amenities` split by colon.
+      parameters:
+        - name: shop_id
+          in: path
+          required: true
+          description: The UUID of the shop profile.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Successfully retrieved shop details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  about_us:
+                    type: string
+                    description: Information about the shop.
+                    example: "We provide the best services in town."
+                  phone_number:
+                    type: string
+                    description: The phone number of the shop.
+                    example: "+1234567890"
+                  venue_amenities:
+                    type: array
+                    description: List of amenities provided by the shop.
+                    items:
+                      type: string
+                    example:
+                      - "Free WiFi"
+                      - "Parking"
+        "404":
+          description: Shop profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Shop profile not found
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: An internal server error occurred
+  
+  /booking/shop/{shop_id}/slots:
+    get:
+      operationId: booking_retrieve
+      description: Returns available booking slots for a given barber shop on a specific date.
+      summary: Get available barber slots
+      parameters:
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          description: Date for which the slots are needed (YYYY-MM-DD)
+          required: true
+        - in: path
+          name: shop_id
+          schema:
+            type: integer
+          description: ID of the barber shop
+          required: true
+      tags:
+        - booking
+      responses:
+        "200":
+          description: Available booking slots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  time_list:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        time:
+                          type: string
+                          format: time
+                        remaining_slots:
+                          type: integer
+              example:
+                message: available booking slots
+                time_list:
+                  - time: "09:00"
+                    remaining_slots: 3
+        "400":
+          description: Request Params are missing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Request Params are missing
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Internal server error
+  /booking/shop/{shop_id}/create:
+    post:
+      operationId: booking_create
+      description: Creates a new booking for a user at a specific time and date for a given shop.
+      summary: Create a booking
+      parameters:
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          description: Booking date (YYYY-MM-DD)
+          required: true
+        - in: path
+          name: shop_id
+          schema:
+            type: integer
+          description: ID of the shop
+          required: true
+        - in: query
+          name: time
+          schema:
+            type: string
+            format: time
+          description: Booking time (HH:MM)
+          required: true
+        - in: query
+          name: user_id
+          schema:
+            type: integer
+          description: ID of the user
+          required: true
+        - in: query
+          name: total_price
+          schema:
+            type: number
+          description: Total price of the booking
+          required: true
+      tags:
+        - booking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shop_id:
+                  type: integer
+                date:
+                  type: string
+                  format: date
+                time:
+                  type: string
+                  format: time
+                user_id:
+                  type: integer
+                total_price:
+                  type: number
+              example:
+                shop_id: 1
+                date: "2023-10-01"
+                time: "10:00"
+                user_id: 123
+      responses:
+        "201":
+          description: Booking confirmed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Booking Confirmed
+        "200":
+          description: No slots available for the selected time or booking settings not configured
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: No Slots Available for the selected time
+        "400":
+          description: Missing request parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Request Params are missing
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Internal server error
+  /booking/shop/{shop_id}/get_bookings:
+    get:
+      summary: Get upcoming bookings for a shop
+      description: Fetches all upcoming bookings for a shop on a specific date and status.
+      tags:
+        - booking
+      parameters:
+        - name: shop_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The unique identifier of the shop
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: The date for which the bookings are to be fetched (YYYY-MM-DD). Defaults to today's date.
+          example: "2024-09-17"
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: string
+            description: The booking status to filter (1 - Booked, 2 - Completed, 3 - Cancelled, 4 - Pending).
+            enum:
+              - "1"
+              - "2"
+              - "3"
+              - "4"
+          example: "1"
+      responses:
+        "200":
+          description: Successful retrieval of upcoming bookings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Upcoming bookings"
+                  bookings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        booking_id:
+                          type: string
+                          format: uuid
+                          example: "123e4567-e89b-12d3-a456-426614174000"
+                        user_id:
+                          type: string
+                          format: uuid
+                          example: "e123e4567-e89b-12d3-a456-426614174002"
+                        status:
+                          type: string
+                          description: The status of the booking
+                          example: "1"
+                        booking_time:
+                          type: string
+                          description: Time of the booking (HH:MM)
+                          example: "14:30"
+                        created_at:
+                          type: string
+                          description: Date and time when the booking was created
+                          example: "2024-09-16 10:15:30"
+                        updated_at:
+                          type: string
+                          description: Date and time when the booking was last updated
+                          example: "2024-09-16 12:10:45"
+                        shop_service:
+                          type: string
+                          description: Name of the service booked, if available
+                          example: "Haircut"
+                        total_price:
+                          type: number
+                          format: float
+                          description: Total price of the booking
+                          example: 29.99
+        "400":
+          description: Bad request (missing or invalid parameters)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No Booking Status provided"
+        "404":
+          description: Shop profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Shop profile not found."
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+                  error:
+                    type: string
+                    example: "Error details here"
+  /booking/shop/{shop_id}/disable-time-slot:
+    post:
+      operationId: shop_disable_time_slot
+      description: Disables a specific time slot for the given shop on the current day.
+      summary: Disable Time Slot
+      tags:
+        - booking
+      parameters:
+        - name: shop_id
+          in: path
+          required: true
+          description: The unique identifier of the shop.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                time:
+                  type: string
+                  description: The time to be disabled in HH:MM format.
+                  example: "14:30"
+              required:
+                - time
+      responses:
+        "200":
+          description: Time slot disabled successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: Time slot disabled successfully.
+        "400":
+          description: Bad request, missing or invalid parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: Invalid time format. Use HH:MM.
+        "404":
+          description: Shop profile not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: Shop profile not found.
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: An unexpected error occurred.
+  /booking/update_booking_status/:
+    post:
+      summary: Update the status of a booking
+      description: This endpoint updates the status of a booking. Status can be updated only if the current status is "Booked".
+      tags:
+        - booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                booking_id:
+                  type: string
+                  format: uuid
+                  description: Unique identifier of the booking
+                  example: "123e4567-e89b-12d3-a456-426614174000"
+                status:
+                  type: string
+                  description: The new status of the booking. It can either be '1' (Completed) or '2' (Cancelled).
+                  enum:
+                    - "1"
+                    - "2"
+                  example: "1"
+              required:
+                - booking_id
+                - status
+      responses:
+        "200":
+          description: Successful update of booking status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Booking status updated to 'Completed'."
+        "400":
+          description: Bad request - either missing parameters or invalid status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid status. Status can only be 'Completed' or 'Cancelled'."
+        "404":
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Booking not found."
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "An internal server error occurred."
+
+  /shop/create-profile:
+    post:
+      tags:
+        - shop
+      summary: Create Shop Profile
+      description: This API creates a new shop profile with details like shop name, contact information, venue amenities, and optional images.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                shop_name:
+                  type: string
+                  description: Name of the shop.
+                  example: "Best Barber"
+                about_us:
+                  type: string
+                  description: Information about the shop.
+                  example: "We offer premium haircuts and grooming services."
+                phone_number:
+                  type: string
+                  description: Contact number for the shop.
+                  example: "+1234567890"
+                email:
+                  type: string
+                  description: Email address for the shop.
+                  example: "shop@example.com"
+                address:
+                  type: string
+                  description: Physical address of the shop.
+                  example: "123 Barber St, City, Country"
+                latitude:
+                  type: string
+                  format: decimal
+                  description: Latitude coordinates of the shop.
+                  example: "40.712776"
+                longitude:
+                  type: string
+                  format: decimal
+                  description: Longitude coordinates of the shop.
+                  example: "-74.005974"
+                venue_amenities:
+                  type: array
+                  description: List of venue amenities.
+                  items:
+                    type: string
+                  example: ["Free WiFi", "Parking", "Restroom"]
+                images:
+                  type: array
+                  description: List of images for the shop.
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "201":
+          description: Shop profile created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Shop profile created successfully.
+                  shop_id:
+                    type: string
+                    format: uuid
+                    description: The UUID of the newly created shop profile.
+        "400":
+          description: Bad Request - Required fields are missing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: All fields are required.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: An internal server error occurred
+  /shop/{shop_id}/add-review:
+    post:
+      operationId: shop_settings_shop_add_review_create
+      description: Creates a new review for a shop.
+      summary: Add Shop Review
+      parameters:
+        - in: path
+          name: shop_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID of the shop to add the review to
+      tags:
+        - shop
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                review_body:
+                  type: string
+                  description: The review text
+                rating:
+                  type: integer
+                  description: Rating between 1 and 5
+                  minimum: 1
+                  maximum: 5
+              required:
+                - review_body
+                - rating
+      responses:
+        "201":
+          description: Review added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: Review added successfully.
+        "400":
+          description: Bad request, missing or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: Review body and rating are required fields.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: An unexpected error occurred.
+  /shop/{shop_id}/add-service:
+    post:
+      operationId: shop_settings_shop_add_service_create
+      description: Creates a new service for a shop with optional images.
+      summary: Add Shop Service
+      parameters:
+        - in: path
+          name: shop_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID of the shop to add the service to
+      tags:
+        - shop
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the service
+                description:
+                  type: string
+                  description: Description of the service (optional)
+                price:
+                  type: string
+                  description: Price of the service
+                duration:
+                  type: string
+                  description: Duration of the service in minutes
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Service images (optional)
+              required:
+                - name
+                - price
+                - duration
+      responses:
+        "201":
+          description: Shop service created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  shop_id:
+                    type: string
+                    format: uuid
+                  service_id:
+                    type: string
+                    format: uuid
+                example:
+                  message: Shop service created successfully.
+                  shop_id: 1
+                  service_id: service-uuid
+        "400":
+          description: Bad request, required fields missing or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: Name, price, and duration are required fields.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: An unexpected error occurred.
+  /shop/{shop_id}/create-preferences:
+    post:
+      operationId: shop_settings_shop_create_preferences_create
+      description: Creates shop preferences including booking settings and available booking months.
+      summary: Create Shop Preferences
+      parameters:
+        - in: path
+          name: shop_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID of the shop for which preferences are to be created
+      tags:
+        - shop
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                booking_enable:
+                  type: boolean
+                  description: Enable booking
+                confirmation_required:
+                  type: boolean
+                  description: Confirmation required for bookings
+                disable_weekend:
+                  type: boolean
+                  description: Disable weekend bookings
+                available_booking_months:
+                  type: integer
+                  description: Number of months available for booking
+                max_booking_per_day:
+                  type: integer
+                  description: Maximum bookings allowed per day
+                start_time:
+                  type: string
+                  format: time
+                  description: Start time for bookings
+                end_time:
+                  type: string
+                  format: time
+                  description: End time for bookings
+                period_of_each_booking:
+                  type: string
+                  description: Duration of each booking period
+                max_booking_per_time:
+                  type: integer
+                  description: Maximum bookings allowed per time slot
+              required:
+                - booking_enable
+                - confirmation_required
+                - disable_weekend
+                - available_booking_months
+                - max_booking_per_day
+                - start_time
+                - end_time
+                - period_of_each_booking
+                - max_booking_per_time
+      responses:
+        "201":
+          description: Shop preferences created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  booking_enable:
+                    type: boolean
+                  confirmation_required:
+                    type: boolean
+                  disable_weekend:
+                    type: boolean
+                  available_booking_months:
+                    type: integer
+                  max_booking_per_day:
+                    type: integer
+                  start_time:
+                    type: string
+                    format: time
+                  end_time:
+                    type: string
+                    format: time
+                  period_of_each_booking:
+                    type: string
+                  max_booking_per_time:
+                    type: integer
+                  shop_id:
+                    type: string
+                    format: uuid
+                example:
+                  booking_enable: true
+                  confirmation_required: false
+                  disable_weekend: false
+                  available_booking_months: 12
+                  max_booking_per_day: 10
+                  start_time: 09:00:00
+                  end_time: "17:00:00"
+                  period_of_each_booking: 30 minutes
+                  max_booking_per_time: 3
+                  shop_id: 1
+        "400":
+          description: Bad request, missing or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: Missing
+                  fields: booking_enable, confirmation_required, etc.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: An unexpected error occurred.
+  /shop/{shop_id}/service/{service_id}/update-service:
+    put:
+      tags:
+        - shop
+      operationId: shop_settings_shop_service_update_service_update
+      description: Updates an existing service for a shop.
+      summary: Update Shop Service
+      parameters:
+        - in: path
+          name: service_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID of the service to update
+        - in: path
+          name: shop_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID of the shop
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Updated service name (optional)
+                description:
+                  type: string
+                  description: Updated service description (optional)
+                price:
+                  type: string
+                  description: Updated service price (optional)
+                duration:
+                  type: string
+                  description: Updated service duration in minutes (optional)
+
+      responses:
+        "200":
+          description: Service updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  service_id:
+                    type: string
+                    format: uuid
+                  shop_id:
+                    type: string
+                    format: uuid
+                example:
+                  message: Shop service updated successfully.
+                  service_id: service-uuid
+                  shop_id: shop-uuid
+        "404":
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: Service not found.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: An unexpected error occurred.
+  /shop/{shop_id}/update-preferences:
+    put:
+      tags:
+        - shop
+      operationId: shop_settings_shop_update_preferences_update
+      description: Updates existing shop preferences.
+      summary: Update Shop Preferences
+      parameters:
+        - in: path
+          name: shop_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID of the shop for which preferences are to be updated
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                booking_enable:
+                  type: boolean
+                  description: Enable booking (optional)
+                confirmation_required:
+                  type: boolean
+                  description: Confirmation required for bookings (optional)
+                disable_weekend:
+                  type: boolean
+                  description: Disable weekend bookings (optional)
+                available_booking_months:
+                  type: integer
+                  description: Number of months available for booking (optional)
+                max_booking_per_day:
+                  type: integer
+                  description: Maximum bookings allowed per day (optional)
+                start_time:
+                  type: string
+                  format: time
+                  description: Start time for bookings (optional)
+                end_time:
+                  type: string
+                  format: time
+                  description: End time for bookings (optional)
+                period_of_each_booking:
+                  type: string
+                  description: Duration of each booking period (optional)
+                max_booking_per_time:
+                  type: integer
+                  description: Maximum bookings allowed per time slot (optional)
+      responses:
+        "200":
+          description: Shop preferences updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  booking_enable:
+                    type: boolean
+                  confirmation_required:
+                    type: boolean
+                  disable_weekend:
+                    type: boolean
+                  available_booking_months:
+                    type: integer
+                  max_booking_per_day:
+                    type: integer
+                  start_time:
+                    type: string
+                    format: time
+                  end_time:
+                    type: string
+                    format: time
+                  period_of_each_booking:
+                    type: string
+                  max_booking_per_time:
+                    type: integer
+                  shop_id:
+                    type: integer
+                example:
+                  id: 1
+                  booking_enable: true
+                  confirmation_required: false
+                  disable_weekend: false
+                  available_booking_months: 12
+                  max_booking_per_day: 10
+                  start_time: 09:00:00
+                  end_time: "17:00:00"
+                  period_of_each_booking: 30 minutes
+                  max_booking_per_time: 3
+                  shop_id: 1
+        "400":
+          description: Bad request, missing or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: Invalid data format or type.
+        "404":
+          description: Shop preferences not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: ShopSettings with the provided shop_id does not exist.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: An unexpected error occurred.
+  /shop/{shop_id}/update-profile:
+    put:
+      tags:
+        - shop
+      operationId: shop_settings_shop_update_profile_update
+      description: Updates an existing shop profile with optional images.
+      summary: Update Shop Profile
+      parameters:
+        - in: path
+          name: shop_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: ID of the shop to update
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                shop_name:
+                  type: string
+                  description: Updated name of the shop (optional)
+                about_us:
+                  type: string
+                  description: Updated description of the shop (optional)
+                phone_number:
+                  type: string
+                  description: Updated contact number (optional)
+                email:
+                  type: string
+                  format: email
+                  description: Updated email (optional)
+                address:
+                  type: string
+                  description: Updated address (optional)
+                latitude:
+                  type: string
+                  description: Updated latitude (optional)
+                longitude:
+                  type: string
+                  description: Updated longitude (optional)
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Updated images (optional)
+      responses:
+        "200":
+          description: Shop profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: Shop profile updated successfully.
+        "404":
+          description: Shop profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: Shop profile not found.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: An unexpected error occurred.
+  /shop/{shop_id}/earnings:
+    get:
+      operationId: get_shop_earnings
+      description: Retrieve the total earnings of a shop within a specified date range. If no date range is provided, it will return the earnings for today.
+      summary: Get Shop Earnings
+      tags:
+        - shop
+      parameters:
+        - name: shop_id
+          in: path
+          required: true
+          description: The unique identifier of the shop.
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          required: false
+          description: The start date for the earnings calculation in YYYY-MM-DD format (optional).
+          schema:
+            type: string
+            format: date
+            example: "2023-09-01"
+        - name: end_date
+          in: query
+          required: false
+          description: The end date for the earnings calculation in YYYY-MM-DD format (optional).
+          schema:
+            type: string
+            format: date
+            example: "2023-09-30"
+      responses:
+        "200":
+          description: Total earnings for the shop within the specified date range.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shop_id:
+                    type: string
+                    format: uuid
+                  start_date:
+                    type: string
+                    format: date
+                  end_date:
+                    type: string
+                    format: date
+                  total_earnings:
+                    type: number
+                    format: float
+                example:
+                  shop_id: "shop-uuid"
+                  start_date: "2023-09-01"
+                  end_date: "2023-09-30"
+                  total_earnings: 1234.56
+        "400":
+          description: Bad request, invalid date format.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: Invalid date format. Use YYYY-MM-DD.
+        "404":
+          description: Shop profile not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: Shop not found.
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: An unexpected error occurred.
+  /shop/{shop_id}/create-barber-details/:
+    post:
+      operationId: create_barber_details
+      description: Insert new barber details for a given shop profile, ensuring phone numbers are unique per shop.
+      summary: Create Barber Details
+      tags:
+        - shop
+      parameters:
+        - name: shop_id
+          in: path
+          required: true
+          description: The unique identifier of the shop.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                barber_name:
+                  type: string
+                  description: The name of the barber.
+                  example: "John Doe"
+                phone_number:
+                  type: string
+                  description: Barber's phone number.
+                  example: "+1234567890"
+      responses:
+        "201":
+          description: Barber details created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Barber details created successfully"
+                  barber_id:
+                    type: string
+                    format: uuid
+                    example: "e37bca8b-b6f6-442e-9375-7592d93f3ae1"
+        "400":
+          description: Bad request, required fields missing or duplicate phone number.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    default: "Required fields missing or duplicate phone number"
+        "404":
+          description: Shop profile not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Shop profile not found."
+
+
+  /user/register:
+    post:
+      operationId: register_user
+      description: Register a new user with email and mobile number.
+      summary: Register User
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: The email address of the user.
+                  example: "user@example.com"
+                mobile_number:
+                  type: string
+                  description: The mobile number of the user.
+                  example: "+1234567890"
+              required:
+                - email
+                - mobile_number
+      responses:
+        "201":
+          description: User registered successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+                  user_id:
+                    type: string
+                    format: uuid
+                    description: The unique identifier for the registered user.
+                    example: "user-uuid"
+        "400":
+          description: Bad request. Required fields are missing or email/mobile number already exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email and mobile_number are required."
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "An error occurred: <error details>"
+  /user/{user_id}/profile/create:
+    post:
+      operationId: create_user_profile
+      description: Creates a new profile for the given user.
+      summary: Create User Profile
+      tags:
+        - user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The unique identifier of the user.
+          schema:
+            type: string
+            format: uuid
+            example: "user-uuid"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                  description: The first name of the user.
+                  example: "John"
+                last_name:
+                  type: string
+                  description: The last name of the user.
+                  example: "Doe"
+                profile_picture:
+                  type: string
+                  format: binary
+                  description: The profile picture of the user (optional).
+              required:
+                - first_name
+                - last_name
+      responses:
+        "201":
+          description: Profile created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Profile created successfully"
+                  first_name:
+                    type: string
+                    example: "John"
+                  last_name:
+                    type: string
+                    example: "Doe"
+                  profile_picture:
+                    type: string
+                    format: uri
+                    example: "http://example.com/media/profile_pictures/user_uuid.jpg"
+        "400":
+          description: Bad request. The profile already exists or required fields are missing.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Profile already exists for this user."
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found."
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "An error occurred: <error details>"
+  /user/{user_id}/profile/update:
+    put:
+      operationId: update_user_profile
+      description: Updates the profile of the given user.
+      summary: Update User Profile
+      tags:
+        - user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The unique identifier of the user.
+          schema:
+            type: string
+            format: uuid
+            example: "user-uuid"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                  description: The updated first name of the user.
+                  example: "John"
+                last_name:
+                  type: string
+                  description: The updated last name of the user.
+                  example: "Doe"
+                profile_picture:
+                  type: string
+                  format: binary
+                  description: The updated profile picture of the user (optional).
+      responses:
+        "200":
+          description: Profile updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Profile updated successfully"
+                  first_name:
+                    type: string
+                    example: "John"
+                  last_name:
+                    type: string
+                    example: "Doe"
+                  profile_picture:
+                    type: string
+                    format: uri
+                    example: "http://example.com/media/profile_pictures/user_uuid.jpg"
+        "400":
+          description: Bad request. Required fields are missing.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid data provided."
+        "404":
+          description: User or User Profile not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User profile not found."
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "An error occurred: <error details>"
+
